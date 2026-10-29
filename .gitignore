@@ -1,0 +1,13 @@
+node_modules
+dist
+data
+*.db
+*.db-*
+.env
+.DS_Store
+.playwright-mcp
+.claude/launch.json
+.dockerignore
+.env.example
+.gitattributes
+DEPLOY.md

@@ -1,0 +1,24 @@
+{
+  "name": "dailytracker",
+  "private": true,
+  "version": "2.0.0",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "dev": "npm run dev -w @dailytracker/api & npm run dev -w @dailytracker/web",
+    "build": "npm run build -w @dailytracker/web && npm run build -w @dailytracker/api",
+    "start": "npm start -w @dailytracker/api",
+    "test": "npm test -w @dailytracker/api",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "seed": "npm run seed -w @dailytracker/api",
+    "db:generate": "npm run db:generate -w @dailytracker/api"
+  },
+  "allowScripts": {
+    "better-sqlite3@13.0.3": true,
+    "esbuild@0.18.20": true,
+    "esbuild@0.25.12": true,
+    "esbuild@0.28.2": true
+  }
+}

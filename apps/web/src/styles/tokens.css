@@ -1,0 +1,104 @@
+/* Propuesta A · Editorial: crema, rosa empolvado y tinta. */
+:root {
+  --bg: #f8f3ee;
+  --surface: #fffcf9;
+  --surface-2: #f1e9e2;
+  --band: #f4ddd6;
+  --blush: #f4ddd6;
+  --blush-2: #ecccc3;
+  --blush-ink: #8a5747;
+  --ink: #1b1a19;
+  --ink-2: #4a4542;
+  --ink-3: #8a817c;
+  --line: rgba(27, 26, 25, 0.14);
+  --line-strong: rgba(27, 26, 25, 0.3);
+
+  /* Panel oscuro (barra lateral, columnas de apoyo) */
+  --panel: #1b1a19;
+  --panel-2: #262422;
+  --on-panel: #f8f3ee;
+  --on-panel-2: #a99d97;
+  --panel-line: rgba(255, 255, 255, 0.12);
+
+  --primary: #1b1a19;
+  --on-primary: #f8f3ee;
+
+  --sage: #6f8f74;
+  --sage-soft: #e1eadf;
+  --sage-ink: #45624b;
+  --honey: #c79a4a;
+  --honey-soft: #f3e7cf;
+  --honey-ink: #7d5a17;
+  --danger: #a4493d;
+  --danger-soft: #f3dcd6;
+
+  --bronze: #b98a64;
+  --bronze-hi: #e2c2a5;
+  --silver: #a9aab0;
+  --silver-hi: #ededf0;
+  --gold: #c9a865;
+  --gold-hi: #f2e0b0;
+
+  --serif: 'Cormorant Garamond', 'Iowan Old Style', Georgia, serif;
+  --sans: 'Inter Variable', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+
+  --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --shadow: 0 24px 64px rgba(27, 20, 16, 0.18);
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --bg: #151312;
+    --surface: #1d1a19;
+    --surface-2: #262221;
+    --band: #2a2220;
+    --blush: #e9c9bf;
+    --blush-2: #d8b0a4;
+    --blush-ink: #e9c9bf;
+    --ink: #f3ece6;
+    --ink-2: #cdc2bb;
+    --ink-3: #93877f;
+    --line: rgba(243, 236, 230, 0.13);
+    --line-strong: rgba(243, 236, 230, 0.3);
+    --panel: #0e0d0c;
+    --panel-2: #1a1817;
+    --primary: #f4ddd6;
+    --on-primary: #1b1a19;
+    --sage-soft: #24302a;
+    --sage-ink: #a9c4ad;
+    --honey-soft: #3a2f1c;
+    --honey-ink: #e3c27f;
+    --danger: #e08a7d;
+    --danger-soft: #3d221d;
+    --shadow: 0 24px 64px rgba(0, 0, 0, 0.5);
+    color-scheme: dark;
+  }
+}
+
+:root[data-theme='dark'] {
+  --bg: #151312;
+  --surface: #1d1a19;
+  --surface-2: #262221;
+  --band: #2a2220;
+  --blush: #e9c9bf;
+  --blush-2: #d8b0a4;
+  --blush-ink: #e9c9bf;
+  --ink: #f3ece6;
+  --ink-2: #cdc2bb;
+  --ink-3: #93877f;
+  --line: rgba(243, 236, 230, 0.13);
+  --line-strong: rgba(243, 236, 230, 0.3);
+  --panel: #0e0d0c;
+  --panel-2: #1a1817;
+  --primary: #f4ddd6;
+  --on-primary: #1b1a19;
+  --sage-soft: #24302a;
+  --sage-ink: #a9c4ad;
+  --honey-soft: #3a2f1c;
+  --honey-ink: #e3c27f;
+  --danger: #e08a7d;
+  --danger-soft: #3d221d;
+  --shadow: 0 24px 64px rgba(0, 0, 0, 0.5);
+  color-scheme: dark;
+}

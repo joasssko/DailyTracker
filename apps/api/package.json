@@ -1,0 +1,40 @@
+{
+  "name": "@dailytracker/api",
+  "private": true,
+  "version": "2.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "DATABASE_PATH=./data/dev.db tsx watch src/index.ts",
+    "build": "esbuild src/index.ts src/seed.ts --bundle --platform=node --format=esm --target=node22 --packages=external --outdir=dist --tsconfig=tsconfig.json",
+    "start": "node dist/index.js",
+    "seed": "DATABASE_PATH=./data/dev.db tsx src/seed.ts",
+    "test": "vitest run",
+    "typecheck": "tsc -p tsconfig.json",
+    "db:generate": "drizzle-kit generate"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "better-sqlite3": "^13.0.3",
+    "cookie-parser": "^1.4.7",
+    "drizzle-orm": "^0.45.4",
+    "express": "^5.3.0",
+    "express-rate-limit": "^8.7.1",
+    "helmet": "^8.3.0",
+    "jsonwebtoken": "^9.0.3",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^9.6.0",
+    "@types/cookie-parser": "^1.4.10",
+    "@types/express": "^5.0.6",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/node": "^26.6.5",
+    "@types/supertest": "^7.2.1",
+    "drizzle-kit": "^0.31.11",
+    "esbuild": "^0.28.2",
+    "supertest": "^7.3.1",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.5"
+  }
+}
