@@ -46,12 +46,12 @@ export function authRoutes(ctx: AppCtx) {
       })
       .returning()
       .get();
-    setSession(res, secret, user.id, ctx.secureCookies);
+    setSession(res, secret, user.id, ctx.secureCookies, input.remember);
     res.status(201).json({ user: publicUser(user) });
   });
 
   r.post('/login', limiter, async (req, res) => {
-    const { username, password } = loginSchema.parse(req.body);
+    const { username, password, remember } = loginSchema.parse(req.body);
     const user = db
       .select()
       .from(users)
@@ -60,7 +60,7 @@ export function authRoutes(ctx: AppCtx) {
     if (!user || !(await bcrypt.compare(password, user.passwordHash))) {
       throw new HttpError(401, 'Usuario o contraseña incorrectos');
     }
-    setSession(res, secret, user.id, ctx.secureCookies);
+    setSession(res, secret, user.id, ctx.secureCookies, remember);
     res.json({ user: publicUser(user) });
   });
 
@@ -69,7 +69,7 @@ export function authRoutes(ctx: AppCtx) {
     res.json({ ok: true });
   });
 
-  const auth = requireAuth(db, secret);
+  const auth = requireAuth(db, secret, ctx.secureCookies);
 
   r.get('/me', auth, (req, res) => {
     const domId = req.user.role === 'sub' ? activeDomOf(db, req.user.id) : null;

@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import request from 'supertest';
+import jwt from 'jsonwebtoken';
 import { addDays, localDate } from '@shared';
 import { createApp } from '../src/app.js';
 import { createDb, type DB } from '../src/db/index.js';
@@ -38,6 +39,31 @@ describe('autenticación', () => {
     const res = await request(app).post('/api/auth/login').send({ username: 'ana', password: 'password123' });
     expect(res.status).toBe(200);
     expect(res.headers['set-cookie'][0]).toMatch(/HttpOnly/);
+  });
+});
+
+describe('sesión', () => {
+  const maxAge = (res: request.Response) => Number(/Max-Age=(\d+)/.exec(res.headers['set-cookie'][0])![1]);
+
+  it('sin "Recuérdame" dura 7 días y con él 180', async () => {
+    await user('ana', 'sub');
+    const corta = await request(app).post('/api/auth/login').send({ username: 'ana', password: 'password123' });
+    expect(maxAge(corta)).toBe(7 * 86400);
+    const larga = await request(app).post('/api/auth/login').send({ username: 'ana', password: 'password123', remember: true });
+    expect(maxAge(larga)).toBe(180 * 86400);
+  });
+
+  it('una sesión activa se renueva sola y conserva su duración', async () => {
+    const { id } = await user('ana', 'sub');
+    const iat = Math.floor(Date.now() / 1000) - 2 * 86400;
+    const vieja = jwt.sign({ uid: id, rem: true, iat }, 'test-secret-1234567890', { expiresIn: '180d' });
+    const res = await request(app).get('/api/auth/me').set('Cookie', `dt_session=${vieja}`);
+    expect(res.status).toBe(200);
+    expect(maxAge(res)).toBe(180 * 86400);
+    // Una sesión recién creada no se reemite en cada petición.
+    const fresca = jwt.sign({ uid: id, rem: true }, 'test-secret-1234567890', { expiresIn: '180d' });
+    const res2 = await request(app).get('/api/auth/me').set('Cookie', `dt_session=${fresca}`);
+    expect(res2.headers['set-cookie']).toBeUndefined();
   });
 });
 

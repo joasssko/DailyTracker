@@ -114,11 +114,14 @@ export const registerSchema = z.object({
   displayName: z.string().trim().min(1).max(60),
   role: z.enum(ROLES),
   timezone: z.string().max(64).optional(),
+  remember: z.boolean().default(false),
 });
 
 export const loginSchema = z.object({
   username: z.string().trim().min(1),
   password: z.string().min(1),
+  /** "Recuérdame" o app instalada: sesión larga y renovable. */
+  remember: z.boolean().default(false),
 });
 
 export const profileSchema = z.object({

@@ -11,3 +11,6 @@ data
 .env.example
 .gitattributes
 DEPLOY.md
+/design-proposals
+deploy/compose.yaml
+deploy/litestream.yml

@@ -1,8 +1,13 @@
 import { useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { Link, useNavigate, useSearchParams } from 'react-router';
+import { Eye, EyeSlash } from '@phosphor-icons/react';
 import type { Role } from '@shared';
 import { api } from '../lib/api';
+import { isInstalledApp, store } from '../lib/device';
+
+const REMEMBER_KEY = 'dt-remember';
+const LAST_USER_KEY = 'dt-last-user';
 
 const ROLE_INFO: Record<Role, { emoji: string; title: string; desc: string }> = {
   dom: { emoji: '🗝️', title: 'Dom/Top', desc: 'Guías, encargas tareas y acompañas a una o más personas.' },
@@ -13,7 +18,16 @@ const ROLE_INFO: Record<Role, { emoji: string; title: string; desc: string }> = 
 export function LoginPage() {
   const [params] = useSearchParams();
   const [mode, setMode] = useState<'login' | 'register'>(params.get('modo') === 'registro' ? 'register' : 'login');
-  const [form, setForm] = useState({ username: '', email: '', password: '', displayName: '', role: 'sub' as Role });
+  const installed = isInstalledApp();
+  const [remember, setRemember] = useState(installed || store.get(REMEMBER_KEY) === '1');
+  const [showPassword, setShowPassword] = useState(false);
+  const [form, setForm] = useState({
+    username: store.get(REMEMBER_KEY) === '1' ? (store.get(LAST_USER_KEY) ?? '') : '',
+    email: '',
+    password: '',
+    displayName: '',
+    role: 'sub' as Role,
+  });
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const qc = useQueryClient();
@@ -26,12 +40,15 @@ export function LoginPage() {
     setError(null);
     try {
       if (mode === 'login') {
-        await api('/auth/login', { body: { username: form.username, password: form.password } });
+        await api('/auth/login', { body: { username: form.username, password: form.password, remember } });
       } else {
         await api('/auth/register', {
-          body: { ...form, timezone: Intl.DateTimeFormat().resolvedOptions().timeZone },
+          body: { ...form, remember, timezone: Intl.DateTimeFormat().resolvedOptions().timeZone },
         });
       }
+      // Solo se guarda el usuario; la contraseña nunca se almacena en el navegador.
+      store.set(REMEMBER_KEY, remember ? '1' : null);
+      store.set(LAST_USER_KEY, remember ? form.username : null);
       await qc.invalidateQueries({ queryKey: ['me'] });
       navigate('/', { replace: true });
     } catch (err) {
@@ -87,7 +104,18 @@ export function LoginPage() {
 
           <label className="field">
             <span>{mode === 'login' ? 'Usuario o correo' : 'Usuario'}</span>
-            <input className="input" value={form.username} onChange={set('username')} autoComplete="username" required />
+            <input
+              className="input"
+              id="username"
+              name="username"
+              value={form.username}
+              onChange={set('username')}
+              autoComplete="username"
+              autoCapitalize="none"
+              autoCorrect="off"
+              spellCheck={false}
+              required
+            />
           </label>
           {mode === 'register' && (
             <>
@@ -101,19 +129,44 @@ export function LoginPage() {
               </label>
             </>
           )}
-          <label className="field">
-            <span>Contraseña</span>
-            <input
-              className="input"
-              type="password"
-              value={form.password}
-              onChange={set('password')}
-              autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
-              minLength={mode === 'register' ? 8 : undefined}
-              required
-            />
+          <div className="field">
+            <label htmlFor="password">Contraseña</label>
+            <div className="password-wrap">
+              <input
+                className="input"
+                id="password"
+                name="password"
+                type={showPassword ? 'text' : 'password'}
+                value={form.password}
+                onChange={set('password')}
+                autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
+                minLength={mode === 'register' ? 8 : undefined}
+                required
+              />
+              <button
+                type="button"
+                className="eye-btn"
+                onClick={() => setShowPassword((v) => !v)}
+                aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                aria-pressed={showPassword}
+              >
+                {showPassword ? <EyeSlash size={20} weight="light" /> : <Eye size={20} weight="light" />}
+              </button>
+            </div>
             {mode === 'register' && <span className="hint">Mínimo 8 caracteres.</span>}
-          </label>
+          </div>
+
+          {installed ? (
+            <p className="small muted">Desde la app instalada tu sesión se mantiene abierta mientras la uses.</p>
+          ) : (
+            <label className="check-row">
+              <input type="checkbox" checked={remember} onChange={(e) => setRemember(e.target.checked)} />
+              <span>
+                Recuérdame
+                <small>Mantiene tu sesión abierta en este dispositivo.</small>
+              </span>
+            </label>
+          )}
 
           {error && <p className="form-error">{error}</p>}
           <button className="btn block" disabled={busy}>

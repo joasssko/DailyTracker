@@ -50,7 +50,7 @@ export function createApp(ctx: AppCtx, opts: { staticDir?: string } = {}) {
   app.use('/api/auth', authRoutes(ctx));
 
   const api = express.Router();
-  api.use(requireAuth(ctx.db, ctx.secret));
+  api.use(requireAuth(ctx.db, ctx.secret, ctx.secureCookies));
   api.use('/relationships', relationshipRoutes(ctx));
   api.use('/tasks', taskRoutes(ctx));
   api.use('/completions', completionRoutes(ctx));

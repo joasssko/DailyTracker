@@ -340,6 +340,28 @@ button { font: inherit; color: inherit; }
 }
 .textarea { min-height: 100px; resize: vertical; line-height: 1.6; }
 .input:focus, .textarea:focus, .select:focus { outline: none; border-color: var(--ink); box-shadow: 0 0 0 3px color-mix(in srgb, var(--blush) 70%, transparent); }
+.field > label { font: 500 0.68rem var(--sans); letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-2); }
+.password-wrap { position: relative; }
+.password-wrap .input { padding-right: 54px; }
+.eye-btn {
+  position: absolute;
+  right: 5px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 40px;
+  height: 40px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--ink-2);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+.eye-btn:hover { color: var(--ink); background: var(--surface-2); }
+.check-row { display: flex; align-items: flex-start; gap: 12px; cursor: pointer; font-size: 0.92rem; }
+.check-row input { width: 20px; height: 20px; margin: 2px 0 0; accent-color: var(--ink); flex: none; cursor: pointer; }
+.check-row small { display: block; font-size: 0.8rem; color: var(--ink-3); }
 .form-error { color: var(--danger); font-size: 0.86rem; background: var(--danger-soft); padding: 10px 14px; border-radius: 12px; }
 
 .seg { display: flex; padding: 4px; gap: 4px; border: 1px solid var(--line-strong); border-radius: 99px; }
