@@ -5,6 +5,7 @@ import type { Icon } from '@phosphor-icons/react';
 import { api } from '../lib/api';
 import { useSession } from '../lib/session';
 import type { ReviewInbox } from '../lib/types';
+import { NotificationBell } from './NotificationBell';
 
 type Item = { to: string; label: string; icon: Icon; badge?: number };
 
@@ -71,15 +72,18 @@ export function Layout() {
                 </NavLink>
               ))}
           </nav>
-          {isDom ? (
-            <Link to="/perfil" className="points-pill">
-              {user.displayName}
-            </Link>
-          ) : (
-            <Link to="/recompensas" className="points-pill">
-              <b>{balance}</b> puntos
-            </Link>
-          )}
+          <div className="topbar-right">
+            <NotificationBell />
+            {isDom ? (
+              <Link to="/perfil" className="points-pill">
+                {user.displayName}
+              </Link>
+            ) : (
+              <Link to="/recompensas" className="points-pill">
+                <b>{balance}</b> puntos
+              </Link>
+            )}
+          </div>
         </header>
 
         <main className="main">

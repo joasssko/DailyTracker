@@ -5,6 +5,7 @@ import { addDays, localDate } from '@shared';
 import { createApp } from '../src/app.js';
 import { createDb, type DB } from '../src/db/index.js';
 import { taskCompletions } from '../src/db/schema.js';
+import { createNotifier } from '../src/domain/notify.js';
 
 const bonuses = { bronze: 20, silver: 50, gold: 100 };
 let db: DB;
@@ -27,7 +28,7 @@ async function link(dom: Awaited<ReturnType<typeof user>>, sub: Awaited<ReturnTy
 
 beforeEach(() => {
   db = createDb(':memory:');
-  app = createApp({ db, secret: 'test-secret-1234567890', bonuses, secureCookies: false });
+  app = createApp({ db, secret: 'test-secret-1234567890', bonuses, secureCookies: false, notify: createNotifier(db, null), push: null });
 });
 
 describe('autenticación', () => {

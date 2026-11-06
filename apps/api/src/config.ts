@@ -20,5 +20,10 @@ export function loadConfig() {
     databasePath: process.env.DATABASE_PATH ?? './data/dailytracker.db',
     staticDir: process.env.STATIC_DIR ?? '../web/dist',
     bonuses,
+    vapid: {
+      publicKey: process.env.VAPID_PUBLIC_KEY,
+      privateKey: process.env.VAPID_PRIVATE_KEY,
+      subject: process.env.VAPID_SUBJECT ?? 'https://dailytracker.joasssko.cl',
+    },
   };
 }

@@ -20,7 +20,7 @@ function canSee(db: DB, user: SessionUser, reward: Reward) {
 }
 
 export function rewardRoutes(ctx: AppCtx) {
-  const { db } = ctx;
+  const { db, notify } = ctx;
   const r = Router();
 
   r.get('/', (req, res) => {
@@ -76,6 +76,15 @@ export function rewardRoutes(ctx: AppCtx) {
       .values({ ownerId, subId, proposedBy: me.id, status, title: input.title, description: input.description, cost: input.cost, icon: input.icon })
       .returning()
       .get();
+    if (status === 'proposed') {
+      notify(ownerId, {
+        kind: 'reward_proposed',
+        title: 'Nueva propuesta de recompensa',
+        body: `${me.displayName} propuso «${reward.title}» por ${reward.cost} puntos.`,
+        discreetBody: 'Tienes una propuesta por revisar.',
+        url: '/revisar',
+      });
+    }
     res.status(201).json(reward);
   });
 
@@ -103,6 +112,15 @@ export function rewardRoutes(ctx: AppCtx) {
       addPoints(t, me.id, -reward.cost, 'redeem', `Canje: ${reward.title}`, red.id);
       return red;
     });
+    if (redemption.status === 'requested') {
+      notify(reward.ownerId, {
+        kind: 'reward_requested',
+        title: 'Canje solicitado',
+        body: `${me.displayName} quiere canjear «${reward.title}» (${reward.cost} puntos).`,
+        discreetBody: 'Tienes un canje por revisar.',
+        url: '/revisar',
+      });
+    }
     res.status(201).json(redemption);
   });
 
@@ -110,7 +128,7 @@ export function rewardRoutes(ctx: AppCtx) {
 }
 
 export function redemptionRoutes(ctx: AppCtx) {
-  const { db } = ctx;
+  const { db, notify } = ctx;
   const r = Router();
 
   // Canjes propios (sum/switch) o de mis sums (Dom).
@@ -149,6 +167,14 @@ export function redemptionRoutes(ctx: AppCtx) {
       if (decision === 'reject') addPoints(t, red.userId, red.cost, 'refund', `Devolución: ${reward.title}`, red.id);
       return t.update(redemptions).set({ status, updatedAt: new Date().toISOString() }).where(eq(redemptions.id, red.id)).returning().get();
     });
+    if (red.userId !== req.user.id) {
+      const text = {
+        approve: { title: 'Canje aprobado', body: `${req.user.displayName} aprobó tu canje de «${reward.title}».` },
+        fulfill: { title: 'Recompensa entregada', body: `«${reward.title}» quedó como entregada. ¡Disfrútala!` },
+        reject: { title: 'Canje rechazado', body: `${req.user.displayName} rechazó «${reward.title}». Te devolvimos ${red.cost} puntos.` },
+      }[decision];
+      notify(red.userId, { kind: 'reward_reviewed', ...text, discreetBody: 'Hay novedades sobre tu recompensa.', url: '/recompensas' });
+    }
     res.json(updated);
   });
 

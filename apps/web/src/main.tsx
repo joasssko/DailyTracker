@@ -14,6 +14,7 @@ import { Layout } from './components/Layout';
 import { Spinner } from './components/Bits';
 import { SessionProvider, useMeQuery } from './lib/session';
 import { ToastProvider } from './lib/toast';
+import { registerServiceWorker } from './lib/push';
 import { LoginPage } from './pages/Login';
 import { LandingPage } from './pages/Landing';
 import { TodayPage } from './pages/Today';
@@ -57,6 +58,12 @@ function App() {
     </SessionProvider>
   );
 }
+
+registerServiceWorker();
+// Cuando llega un push con la app abierta, se actualiza la campanita.
+navigator.serviceWorker?.addEventListener('message', (e) => {
+  if (e.data?.type === 'dt-notification') queryClient.invalidateQueries({ queryKey: ['notifications'] });
+});
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

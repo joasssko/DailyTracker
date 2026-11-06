@@ -7,6 +7,7 @@ import { useSession } from '../lib/session';
 import { useToast } from '../lib/toast';
 import type { Invite } from '../lib/types';
 import { Avatar, PageBand, Stat } from '../components/Bits';
+import { NotificationSettings } from '../components/NotificationSettings';
 
 const ROLE_LABEL = { dom: 'Dom/Top', sub: 'Sum/Bottom', switch: 'Solo/Switch' } as const;
 type Theme = 'system' | 'light' | 'dark';
@@ -31,6 +32,12 @@ export function ProfilePage() {
     queryFn: () => api<{ invites?: Invite[]; relationship?: { id: number } | null }>('/relationships'),
     enabled: user.role !== 'switch',
   });
+
+  useEffect(() => {
+    if (window.location.hash === '#notificaciones') {
+      setTimeout(() => document.getElementById('notificaciones')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 300);
+    }
+  }, []);
 
   useEffect(() => {
     try {
@@ -127,6 +134,8 @@ export function ProfilePage() {
               Guardar
             </button>
           </form>
+
+          <NotificationSettings role={user.role} />
         </div>
 
         <aside className="card stack">

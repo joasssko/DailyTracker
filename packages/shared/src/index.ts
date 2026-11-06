@@ -179,3 +179,33 @@ export const redemptionReviewSchema = z.object({
 });
 
 export const joinSchema = z.object({ code: z.string().trim().min(4).max(32) });
+
+// ---------- Notificaciones ----------
+export const NOTIFICATION_KINDS = [
+  'reminder',
+  'task_assigned',
+  'task_completed',
+  'task_reviewed',
+  'reward_requested',
+  'reward_proposed',
+  'reward_reviewed',
+  'test',
+] as const;
+export type NotificationKind = (typeof NOTIFICATION_KINDS)[number];
+
+export const notificationPrefsSchema = z.object({
+  remindersEnabled: z.boolean(),
+  reminderTime: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, 'Hora inválida (HH:MM)'),
+  discreet: z.boolean(),
+  notifyAssigned: z.boolean(),
+  notifyCompleted: z.boolean(),
+  notifyReviewed: z.boolean(),
+  notifyRewards: z.boolean(),
+}).partial();
+
+export const pushSubscriptionSchema = z.object({
+  endpoint: z.string().url().max(2000),
+  keys: z.object({ p256dh: z.string().min(1).max(500), auth: z.string().min(1).max(500) }),
+});
+
+export const markReadSchema = z.object({ ids: z.array(z.number().int().positive()).max(200).optional() });

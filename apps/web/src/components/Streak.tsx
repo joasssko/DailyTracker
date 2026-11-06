@@ -22,7 +22,7 @@ export function StreakProgress({ task }: { task: TaskView }) {
         {s.current === 0
           ? `Empieza hoy · ${s.thresholds.bronze} días para bronce`
           : s.next
-            ? `${s.current} ${s.current === 1 ? 'día seguido' : 'días seguidos'} · faltan ${s.next.remaining} para ${TIER_LABELS[s.next.tier].toLowerCase()}`
+            ? `${s.current} ${s.current === 1 ? 'día seguido' : 'días seguidos'} · ${s.next.remaining === 1 ? 'falta' : 'faltan'} ${s.next.remaining} para ${TIER_LABELS[s.next.tier].toLowerCase()}`
             : `${s.current} días seguidos · racha de oro`}
         {s.best > s.current && ` · mejor: ${s.best}`}
       </span>

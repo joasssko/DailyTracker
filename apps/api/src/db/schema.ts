@@ -150,3 +150,58 @@ export const pointLedger = sqliteTable(
   },
   (t) => [index('ledger_user_idx').on(t.userId, t.createdAt)],
 );
+
+/** Preferencias de notificación por persona (si no hay fila, aplican los valores por defecto). */
+export const notificationPrefs = sqliteTable('notification_prefs', {
+  userId: integer('user_id').primaryKey().references(() => users.id),
+  remindersEnabled: integer('reminders_enabled', { mode: 'boolean' }).notNull().default(true),
+  /** Hora local HH:MM del recordatorio diario. */
+  reminderTime: text('reminder_time').notNull().default('09:00'),
+  /** Modo discreto: el aviso en pantalla bloqueada no muestra nombres ni títulos. */
+  discreet: integer('discreet', { mode: 'boolean' }).notNull().default(true),
+  notifyAssigned: integer('notify_assigned', { mode: 'boolean' }).notNull().default(true),
+  notifyCompleted: integer('notify_completed', { mode: 'boolean' }).notNull().default(true),
+  notifyReviewed: integer('notify_reviewed', { mode: 'boolean' }).notNull().default(true),
+  notifyRewards: integer('notify_rewards', { mode: 'boolean' }).notNull().default(true),
+  /** Último día local en que se envió el recordatorio (evita repetirlo). */
+  lastReminderDate: text('last_reminder_date'),
+});
+
+/** Suscripciones Web Push: una por navegador o dispositivo. */
+export const pushSubscriptions = sqliteTable(
+  'push_subscriptions',
+  {
+    id: integer('id').primaryKey({ autoIncrement: true }),
+    userId: integer('user_id').notNull().references(() => users.id),
+    endpoint: text('endpoint').notNull().unique(),
+    p256dh: text('p256dh').notNull(),
+    auth: text('auth').notNull(),
+    userAgent: text('user_agent').notNull().default(''),
+    createdAt: createdAt(),
+  },
+  (t) => [index('push_user_idx').on(t.userId)],
+);
+
+/** Buzón de alertas dentro de la app. */
+export const notifications = sqliteTable(
+  'notifications',
+  {
+    id: integer('id').primaryKey({ autoIncrement: true }),
+    userId: integer('user_id').notNull().references(() => users.id),
+    kind: text('kind', {
+      enum: ['reminder', 'task_assigned', 'task_completed', 'task_reviewed', 'reward_requested', 'reward_proposed', 'reward_reviewed', 'test'],
+    }).notNull(),
+    title: text('title').notNull(),
+    body: text('body').notNull(),
+    url: text('url').notNull().default('/'),
+    readAt: text('read_at'),
+    createdAt: createdAt(),
+  },
+  (t) => [index('notifications_user_idx').on(t.userId, t.createdAt)],
+);
+
+/** Ajustes internos de la app (por ejemplo, las claves VAPID generadas). */
+export const appSettings = sqliteTable('app_settings', {
+  key: text('key').primaryKey(),
+  value: text('value').notNull(),
+});

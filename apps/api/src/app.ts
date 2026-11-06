@@ -13,6 +13,7 @@ import { redemptionRoutes, rewardRoutes } from './routes/rewards.js';
 import { diaryRoutes } from './routes/diary.js';
 import { pointRoutes } from './routes/points.js';
 import { reviewRoutes } from './routes/review.js';
+import { notificationRoutes } from './routes/notifications.js';
 
 export function createApp(ctx: AppCtx, opts: { staticDir?: string } = {}) {
   const app = express();
@@ -59,6 +60,7 @@ export function createApp(ctx: AppCtx, opts: { staticDir?: string } = {}) {
   api.use('/diary', diaryRoutes(ctx));
   api.use('/points', pointRoutes(ctx));
   api.use('/review', reviewRoutes(ctx));
+  api.use('/notifications', notificationRoutes(ctx));
   app.use('/api', api);
   app.use('/api', (_req, res) => {
     res.status(404).json({ error: 'Ruta no encontrada' });
@@ -67,6 +69,12 @@ export function createApp(ctx: AppCtx, opts: { staticDir?: string } = {}) {
   // Frontend compilado (SPA).
   if (opts.staticDir && existsSync(opts.staticDir)) {
     app.use('/assets', express.static(join(opts.staticDir, 'assets'), { immutable: true, maxAge: '1y' }));
+    // El service worker nunca se cachea, para que los cambios lleguen en el siguiente deploy.
+    app.get('/sw.js', (_req, res) => {
+      res.setHeader('Cache-Control', 'no-cache');
+      res.setHeader('Service-Worker-Allowed', '/');
+      res.sendFile(join(opts.staticDir!, 'sw.js'));
+    });
     app.use(express.static(opts.staticDir, { index: false, maxAge: '1h' }));
     app.get('/{*splat}', (_req, res) => {
       res.setHeader('Cache-Control', 'no-cache');

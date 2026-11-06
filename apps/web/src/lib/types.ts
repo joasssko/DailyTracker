@@ -139,3 +139,23 @@ export interface ReviewInbox {
   redemptions: Redemption[];
   proposals: (Reward & { userName: string })[];
 }
+
+export interface AppNotification {
+  id: number;
+  kind: import('@shared').NotificationKind;
+  title: string;
+  body: string;
+  url: string;
+  readAt: string | null;
+  createdAt: string;
+}
+
+export interface NotificationPrefs {
+  remindersEnabled: boolean;
+  reminderTime: string;
+  discreet: boolean;
+  notifyAssigned: boolean;
+  notifyCompleted: boolean;
+  notifyReviewed: boolean;
+  notifyRewards: boolean;
+}

@@ -8,7 +8,7 @@ import { badRequest, forbidden, notFound, parseId } from '../lib/http.js';
 import { buildTaskViews, completeTask, redactCompletion, reviewCompletion } from '../domain/tasks.js';
 
 export function taskRoutes(ctx: AppCtx) {
-  const { db, bonuses } = ctx;
+  const { db, bonuses, notify } = ctx;
   const r = Router();
 
   // Lista de tareas de una persona (propia o de un sum a cargo).
@@ -51,6 +51,15 @@ export function taskRoutes(ctx: AppCtx) {
       })
       .returning()
       .get();
+    if (assignedTo !== me.id) {
+      notify(assignedTo, {
+        kind: 'task_assigned',
+        title: 'Nueva tarea',
+        body: `${me.displayName} te asignó «${task.title}»${task.type === 'recurring' ? ' (diaria)' : ''}.`,
+        discreetBody: 'Tienes una tarea nueva.',
+        url: '/',
+      });
+    }
     res.status(201).json(buildTaskViews(db, [task], me.id)[0]);
   });
 
@@ -81,6 +90,15 @@ export function taskRoutes(ctx: AppCtx) {
     if (task.assignedTo !== req.user.id) throw forbidden('Esta tarea no está asignada a ti');
     const input = completeSchema.parse(req.body ?? {});
     const result = completeTask(db, task, req.user.id, input, bonuses);
+    if (task.requiresApproval) {
+      notify(task.createdBy, {
+        kind: 'task_completed',
+        title: 'Entrega por revisar',
+        body: `${req.user.displayName} completó «${task.title}».`,
+        discreetBody: 'Tienes una entrega por revisar.',
+        url: '/revisar',
+      });
+    }
     res.status(201).json({ ...result, task: buildTaskViews(db, [getTask(db, task.id)], req.user.id)[0] });
   });
 
@@ -101,7 +119,7 @@ export function taskRoutes(ctx: AppCtx) {
 }
 
 export function completionRoutes(ctx: AppCtx) {
-  const { db, bonuses } = ctx;
+  const { db, bonuses, notify } = ctx;
   const r = Router();
 
   r.post('/:id/review', (req, res) => {
@@ -110,7 +128,18 @@ export function completionRoutes(ctx: AppCtx) {
     const task = getTask(db, completion.taskId);
     assertTaskManager(req.user, task);
     const { decision, note } = reviewSchema.parse(req.body);
-    res.json(reviewCompletion(db, task, completion, req.user.id, decision, note, bonuses));
+    const result = reviewCompletion(db, task, completion, req.user.id, decision, note, bonuses);
+    const approved = decision === 'approve';
+    notify(task.assignedTo, {
+      kind: 'task_reviewed',
+      title: approved ? 'Tarea aprobada' : 'Tarea no aprobada',
+      body: approved
+        ? `${req.user.displayName} aprobó «${task.title}»: +${task.points} puntos${result.newBadges.length ? ' y una medalla nueva' : ''}.`
+        : `${req.user.displayName} no aprobó «${task.title}»${note ? `: “${note}”` : ''}. Puedes intentarlo de nuevo.`,
+      discreetBody: 'Revisaron una de tus entregas.',
+      url: '/',
+    });
+    res.json(result);
   });
 
   // Sensaciones registradas al completar tareas (propias, o compartidas por un sum).
