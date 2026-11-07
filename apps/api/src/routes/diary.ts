@@ -28,7 +28,7 @@ export function diaryRoutes(ctx: AppCtx) {
     }
     const entry = db
       .insert(diaryEntries)
-      .values({ userId: req.user.id, content: input.content, mood: input.mood ?? null, visibility: input.visibility, completionId: input.completionId ?? null })
+      .values({ userId: req.user.id, content: input.content, mood: input.mood ?? null, emotion: input.emotion ?? null, visibility: input.visibility, completionId: input.completionId ?? null })
       .returning()
       .get();
     res.status(201).json(entry);

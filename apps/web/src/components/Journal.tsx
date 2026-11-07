@@ -1,22 +1,28 @@
-import { useState } from 'react';
-import { Trash } from '@phosphor-icons/react';
-import { FEELING_LABELS, MOOD_LABELS, MOODS, type Feeling, type Mood } from '@shared';
+import { useCallback, useState } from 'react';
+import { Sparkle, Trash } from '@phosphor-icons/react';
+import { FEELING_LABELS, MOOD_LABELS, MOODS, parseEmotion, type Feeling, type Mood } from '@shared';
 import { relativeTime, shortDate } from '../lib/format';
 import { api, useApiMutation } from '../lib/mutations';
 import type { DiaryEntry, FeelingRow } from '../lib/types';
 import { Empty, VisibilityChip } from './Bits';
+import { EmotionChip, EmotionWheelSheet } from './EmotionWheel';
 
 export function DiaryComposer({ canShare }: { canShare: boolean }) {
   const [content, setContent] = useState('');
   const [mood, setMood] = useState<Mood | null>(null);
+  const [emotion, setEmotion] = useState<string | null>(null);
+  const [wheelOpen, setWheelOpen] = useState(false);
   const [shared, setShared] = useState(false);
+  const closeWheel = useCallback(() => setWheelOpen(false), []);
+  const picked = parseEmotion(emotion);
   const save = useApiMutation(
-    () => api('/diary', { body: { content, mood, visibility: canShare && shared ? 'shared' : 'private' } }),
+    () => api('/diary', { body: { content, mood, emotion, visibility: canShare && shared ? 'shared' : 'private' } }),
     {
       success: 'Entrada guardada',
       onSuccess: () => {
         setContent('');
         setMood(null);
+        setEmotion(null);
       },
     },
   );
@@ -29,6 +35,20 @@ export function DiaryComposer({ canShare }: { canShare: boolean }) {
         save.mutate(undefined);
       }}
     >
+      {picked && (
+        <div className="stack" style={{ gap: 6 }}>
+          <div className="row wrap" style={{ gap: 12 }}>
+            <EmotionChip value={emotion} full onClear={() => setEmotion(null)} />
+            <button type="button" className="link-btn" onClick={() => setWheelOpen(true)}>
+              Cambiar
+            </button>
+          </div>
+          <p className="emo-prompt">
+            ¿Qué te hizo sentir {picked.emotion.label.toLowerCase()} hoy?
+            <small>{picked.emotion.desc}</small>
+          </p>
+        </div>
+      )}
       <label className="field">
         <span className="sr-only">Escribe tu entrada</span>
         <textarea
@@ -36,7 +56,7 @@ export function DiaryComposer({ canShare }: { canShare: boolean }) {
           style={{ font: '400 1.35rem/1.5 var(--serif)', border: 0, padding: 0, minHeight: 120, boxShadow: 'none', background: 'transparent' }}
           value={content}
           onChange={(e) => setContent(e.target.value)}
-          placeholder="¿Cómo estuvo tu día? ¿Qué sentiste?"
+          placeholder={picked ? 'Escribe lo que pasó, dónde lo sentiste en el cuerpo, qué necesitas…' : '¿Cómo estuvo tu día? ¿Qué sentiste?'}
           maxLength={10000}
           required
         />
@@ -54,7 +74,22 @@ export function DiaryComposer({ canShare }: { canShare: boolean }) {
             {MOOD_LABELS[m].emoji} {MOOD_LABELS[m].label}
           </button>
         ))}
+        {!picked && (
+          <button type="button" className="tag plain dashed emo-helper" onClick={() => setWheelOpen(true)}>
+            <Sparkle size={13} /> Ayúdame a identificar
+          </button>
+        )}
       </div>
+      {wheelOpen && (
+        <EmotionWheelSheet
+          initial={emotion}
+          onClose={closeWheel}
+          onPick={(v) => {
+            setEmotion(v);
+            setWheelOpen(false);
+          }}
+        />
+      )}
       <div className="row between wrap" style={{ borderTop: '1px solid var(--line)', paddingTop: 16, marginTop: 4 }}>
         {canShare ? (
           <label className="row small" style={{ cursor: 'pointer' }}>
@@ -86,11 +121,14 @@ export function EntryCard({ entry, editable, canShare = false }: { entry: DiaryE
     <article className="entry">
       <div className="row between">
         <span className="eyebrow">{relativeTime(entry.createdAt)}</span>
-        {mood && (
-          <span className="tag plain">
-            {mood.emoji} {mood.label}
-          </span>
-        )}
+        <span className="row wrap" style={{ gap: 6, justifyContent: 'flex-end' }}>
+          <EmotionChip value={entry.emotion} />
+          {mood && (
+            <span className="tag plain">
+              {mood.emoji} {mood.label}
+            </span>
+          )}
+        </span>
       </div>
       <p className="entry-body">{entry.content}</p>
       <div className="entry-foot">

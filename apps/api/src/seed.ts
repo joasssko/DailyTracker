@@ -74,7 +74,7 @@ export function seed(db: DB, bonuses = loadConfig().bonuses) {
 
   db.insert(diaryEntries)
     .values([
-      { userId: lirio.id, content: 'Me sentí muy acompañada hoy. Las tareas pequeñas me ordenan el día.', mood: 'bien', visibility: 'shared' },
+      { userId: lirio.id, content: 'Me sentí muy acompañada hoy. Las tareas pequeñas me ordenan el día.', mood: 'bien', emotion: 'felicidad.intimo.sensible', visibility: 'shared' },
       { userId: lirio.id, content: 'Nota solo para mí: quiero pedirle más rutinas de mañana.', mood: 'neutral', visibility: 'private' },
       { userId: sauce.id, content: 'Llevo casi una semana leyendo todos los días.', mood: 'radiante', visibility: 'private' },
     ])

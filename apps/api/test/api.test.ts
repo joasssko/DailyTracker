@@ -93,6 +93,20 @@ describe('permisos entre Dom y sum', () => {
     expect(res.body.map((e: { content: string }) => e.content)).toEqual(['para ti']);
   });
 
+  it('la entrada guarda la emoción de la ruleta y rechaza rutas inválidas', async () => {
+    const sub = await user('sub1', 'sub');
+    const ok = await sub.agent.post('/api/diary').send({ content: 'hoy', emotion: 'felicidad.pacifico.esperanzado' });
+    expect(ok.status).toBe(201);
+    expect(ok.body.emotion).toBe('felicidad.pacifico.esperanzado');
+    const matiz = await sub.agent.post('/api/diary').send({ content: 'hoy', emotion: 'miedo.ansioso' });
+    expect(matiz.body.emotion).toBe('miedo.ansioso');
+    for (const emotion of ['felicidad', 'felicidad.ansioso', 'miedo.ansioso.esperanzado', 'x.y.z.w']) {
+      expect((await sub.agent.post('/api/diary').send({ content: 'hoy', emotion })).status).toBe(400);
+    }
+    const quitar = await sub.agent.patch(`/api/diary/${ok.body.id}`).send({ emotion: null });
+    expect(quitar.body.emotion).toBeNull();
+  });
+
   it('una sensación privada no aparece en la vista del Dom', async () => {
     const dom = await user('dom1', 'dom');
     const sub = await user('sub1', 'sub');

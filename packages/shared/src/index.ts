@@ -1,4 +1,7 @@
 import { z } from 'zod';
+import { isEmotion } from './emotions';
+
+export * from './emotions';
 
 // ---------- Roles ----------
 export const ROLES = ['dom', 'sub', 'switch'] as const;
@@ -155,11 +158,13 @@ export const reviewSchema = z.object({
 export const diarySchema = z.object({
   content: z.string().trim().min(1).max(10000),
   mood: z.enum(MOODS).nullable().optional(),
+  /** Ruta en la ruleta de las emociones: "familia.matiz" o "familia.matiz.emocion". */
+  emotion: z.string().max(80).refine(isEmotion, 'Emoción desconocida').nullable().optional(),
   visibility: z.enum(['private', 'shared']).default('private'),
   completionId: z.number().int().positive().nullable().optional(),
 });
 
-export const diaryUpdateSchema = diarySchema.pick({ content: true, visibility: true, mood: true }).partial();
+export const diaryUpdateSchema = diarySchema.pick({ content: true, visibility: true, mood: true, emotion: true }).partial();
 
 export const rewardSchema = z.object({
   title: z.string().trim().min(1).max(120),

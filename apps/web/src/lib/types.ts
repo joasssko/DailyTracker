@@ -62,6 +62,7 @@ export interface DiaryEntry {
   userId: number;
   content: string;
   mood: string | null;
+  emotion: string | null;
   visibility: 'private' | 'shared';
   completionId: number | null;
   createdAt: string;

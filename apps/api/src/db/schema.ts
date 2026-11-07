@@ -96,6 +96,8 @@ export const diaryEntries = sqliteTable(
     userId: integer('user_id').notNull().references(() => users.id),
     content: text('content').notNull(),
     mood: text('mood'),
+    /** Ruta en la ruleta de las emociones ("familia.matiz[.emocion]"). */
+    emotion: text('emotion'),
     visibility: text('visibility', { enum: ['private', 'shared'] }).notNull().default('private'),
     completionId: integer('completion_id').references(() => taskCompletions.id),
     createdAt: createdAt(),
